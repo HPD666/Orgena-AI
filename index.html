@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Orgena Research AI</title>
@@ -69,55 +69,58 @@
   <header>
     <div class="avatar">.</div>
     <h1>Orgena</h1>
-    <span class="badge">WWW kaynaklı</span>
-    <span class="status" id="status"> Araştırmacı AI</span>
+    <span class="badge">Web-based</span>
+    <span class="status" id="status"> Researcher AI</span>
   </header>
 
   <div class="container">
     <aside>
       <div class="settings">
-        <h2>Yanıt ayarları</h2>
+        <h2>Response Settings</h2>
+
         <div class="kv">
-          <label>Biçim</label>
+          <label>Format</label>
           <div class="pill">
             <label class="small"><input type="checkbox" id="markdown" checked> Markdown</label>
-            <label class="small"><input type="checkbox" id="richTables" checked> Zengin tablolar</label>
-            <label class="small"><input type="checkbox" id="codeBlocks" checked> Kod blokları</label>
-            <label class="small"><input type="checkbox" id="showSources" checked> Kaynak bağlantıları</label>
-          </div>
-        </div>
-        <div class="kv">
-          
-          <div class="pill">
-            <label class="small">Hız (ms/char) <input type="number" id="typeSpeed" min="1" max="50" step="1" value="10"></label>
-            <label class="small"><input type="checkbox" id="skeletonLoad" checked> Yükleme şeritleri</label>
+            <label class="small"><input type="checkbox" id="richTables" checked> Rich tables</label>
+            <label class="small"><input type="checkbox" id="codeBlocks" checked> Code blocks</label>
+            <label class="small"><input type="checkbox" id="showSources" checked> Source links</label>
           </div>
         </div>
 
-        <h2>Anahtarsız kaynaklar</h2>
+        <div class="kv">
+          <div class="pill">
+            <label class="small">Speed (ms/char) <input type="number" id="typeSpeed" min="1" max="50" step="1" value="10"></label>
+            <label class="small"><input type="checkbox" id="skeletonLoad" checked> Loading stripes</label>
+          </div>
+        </div>
+
+        <h2>Keyless Sources</h2>
         <div class="pill">
           <label class="small"><input type="checkbox" id="useDDG" checked> DuckDuckGo IA</label>
-          <label class="small"><input type="checkbox" id="useWiki" checked> Wikipedia arama/özet</label>
+          <label class="small"><input type="checkbox" id="useWiki" checked> Wikipedia search/summary</label>
           <label class="small"><input type="checkbox" id="useWikidata" checked> Wikidata</label>
-          <label class="small"><input type="checkbox" id="useWeather"> Open‑Meteo (hava)</label>
-          <label class="small"><input type="checkbox" id="useWikiLinks" checked> Wikipedia dış linkleri</label>
+          <label class="small"><input type="checkbox" id="useWeather"> Open-Meteo (weather)</label>
+          <label class="small"><input type="checkbox" id="useWikiLinks" checked> Wikipedia external links</label>
         </div>
+
         <div class="kv">
-          <label>Gelişmiş</label>
+          <label>Advanced</label>
           <div class="pill">
-            <label class="small"><input type="checkbox" id="useJina" checked> Web içerik alma (r.jina.ai)</label>
+            <label class="small"><input type="checkbox" id="useJina" checked> Web content fetch (r.jina.ai)</label>
           </div>
         </div>
 
-        <h2>Sohbet</h2>
+        <h2>Chat</h2>
         <div class="bar">
-          <button id="newChat">Yeni sohbet</button>
-          <button id="exportChat">Dışa aktar</button>
-          <button id="clearChat" class="danger">Temizle</button>
+          <button id="newChat">New chat</button>
+          <button id="exportChat">Export</button>
+          <button id="clearChat" class="danger">Clear</button>
         </div>
+
         <div class="kv">
-          <label class="small">Not</label>
-          <div class="small fade">CORS kısıtlı kaynaklarda otomatik “r.jina.ai” aracılığıyla metin okunur.</div>
+          <label class="small">Note</label>
+          <div class="small fade">On CORS-restricted sources, text is automatically read via “r.jina.ai”.</div>
         </div>
       </div>
     </aside>
@@ -126,20 +129,20 @@
       <div id="chat" class="chat"></div>
       <div class="tools">
         <div class="row">
-          <textarea id="input" placeholder="Her şeyi sor: teknik, karşılaştırma, rapor, tablo, hava, wiki, gerçek web…" rows="3"></textarea>
-          <button id="send" class="primary">Gönder</button>
+          <textarea id="input" placeholder="Ask anything: technical, comparison, report, table, weather, wiki, real web…" rows="3"></textarea>
+          <button id="send" class="primary">Send</button>
         </div>
         <div class="bar">
-          <div class="chip">Orgena aktif</div>
-          <div class="chip">Gerçek web derleme</div>
-          <span class="small right">İstanbul odaklı içerik mümkün</span>
+          <div class="chip">Orgena active</div>
+          <div class="chip">Real web compilation</div>
+          <span class="small right">World-focused content possible</span>
         </div>
       </div>
     </main>
   </div>
 
   <div class="footer">
-    <span>İstediğini sor... ama bana nasıl olduğumu sorma. Cevap veremiyorum :)</span>
+    <span>Ask anything… but don’t ask how I am. I can’t answer that :)</span>
   </div>
 
   <script>
@@ -249,10 +252,10 @@
       } catch(e){}
     }
 
-    // Anahtarsız kaynaklar
+    // Keyless Sources
     async function ddgInstant(q) {
       const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
-      const r = await fetch(url); if (!r.ok) throw new Error('DDG IA hata: '+r.status);
+      const r = await fetch(url); if (!r.ok) throw new Error('DDG IA error: '+r.status);
       const j = await r.json();
       return {
         source: 'DuckDuckGo',
@@ -268,7 +271,7 @@
 
     async function wikipediaSearch(q) {
       const url = `https://tr.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Wikipedia search hata: '+r.status);
+      const r = await fetch(url); if (!r.ok) throw new Error('Wikipedia search error: '+r.status);
       const j = await r.json();
       const hit = j.query?.search?.[0];
       if (!hit) return null;
@@ -293,16 +296,15 @@
 
     async function wikipediaExternalLinks(title) {
       const url = `https://tr.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=externallinks&format=json&origin=*`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Wikipedia externallinks hata: '+r.status);
+      const r = await fetch(url); if (!r.ok) throw new Error('Wikipedia externallinks error: '+r.status);
       const j = await r.json();
       const links = j.parse?.externallinks || [];
-      // filtre: http/https, çok uzun olmayan
       return links.filter(u => /^https?:\/\//.test(u)).slice(0, 6);
     }
 
     async function wikidataSearch(q) {
       const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=tr&format=json&origin=*`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Wikidata hata: '+r.status);
+      const r = await fetch(url); if (!r.ok) throw new Error('Wikidata error: '+r.status);
       const j = await r.json();
       const item = (j.search||[])[0];
       if (!item) return null;
@@ -311,32 +313,29 @@
 
     async function openMeteo(lat, lon) {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&current_weather=true`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Open-Meteo hata: '+r.status);
+      const r = await fetch(url); if (!r.ok) throw new Error('Open-Meteo error: '+r.status);
       const j = await r.json();
       return { source:'Open-Meteo', data:j };
     }
 
-    // Web içerik alma (CORS güvenli metin okuma)
+    // Web content fetch (CORS-safe text reader)
     async function readWeb(url) {
-      // r.jina.ai, hedef URL’nin tam metnini JSON’suz, düz metin olarak döndürür
       const proxy = `https://r.jina.ai/http://` + url.replace(/^https?:\/\//,'');
       const r = await fetch(proxy, { headers: { 'Accept': 'text/plain' } });
-      if (!r.ok) throw new Error('Web okuma hata: '+r.status);
+      if (!r.ok) throw new Error('Web read error: '+r.status);
       const txt = await r.text();
       return { source:'Web', url, text: txt.slice(0, 20000) };
     }
 
-    // Orkestrasyon
+    // Orchestration
     async function orchestrate(q) {
       const lower = q.toLowerCase();
       const sources = [];
       const links = [];
       const isWeather = /(hava|weather|meteoroloji|yağmur|sıcaklık)/.test(lower) && /(istanbul|çekmeköy|koordinat|lat|lon|maltepe)/.test(lower);
 
-      // Skeleton hazırla
-      // 1) DDG IA
       if (el.useDDG.checked) { try { sources.push(await ddgInstant(q)); } catch(e){} }
-      // 2) Wikipedia arama + özet
+
       let wikiTitle = null;
       if (el.useWiki.checked) {
         try {
@@ -351,7 +350,7 @@
           }
         } catch(e){}
       }
-      // 3) Wikidata
+
       if (el.useWikidata.checked) {
         try {
           const wd = await wikidataSearch(q);
@@ -361,14 +360,14 @@
           }
         } catch(e){}
       }
-      // 4) Hava durumu (isteğe bağlı)
+
       if (el.useWeather.checked && isWeather) {
         const m = q.match(/(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)/);
-        const lat = m ? Number(m[1]) : 41.015; // İstanbul yaklaşık
+        const lat = m ? Number(m[1]) : 41.015;
         const lon = m ? Number(m[3]) : 29.0;
         try { sources.push(await openMeteo(lat, lon)); } catch(e){}
       }
-      // 5) Wikipedia dış linklerinden gerçek web metni
+
       let webTexts = [];
       if (el.useWikiLinks.checked && wikiTitle) {
         try {
@@ -387,7 +386,6 @@
       return synthesize(q, sources, links, webTexts);
     }
 
-    // Sentez: ChatGPT tarzı yanıt
     function synthesize(q, sources, links, webTexts) {
       const srcLinks = [];
       const facts = [];
@@ -406,17 +404,16 @@
           if (s.url) srcLinks.push({ label: s.title, url: s.url });
           meta.push(s.source);
         } else if (s.source === 'Wikidata') {
-          facts.push(`Wikidata: ${s.label} — ${s.desc || 'açıklama yok'}`);
+          facts.push(`Wikidata: ${s.label} — ${s.desc || 'no description'}`);
           if (s.url) srcLinks.push({ label: s.label || 'Wikidata', url: s.url });
           meta.push('Wikidata');
         } else if (s.source === 'Open-Meteo') {
           const cw = s.data?.current_weather || {};
-          facts.push(`Hava: sıcaklık ${cw.temperature}°C, rüzgar ${cw.windspeed} m/s`);
-          meta.push('Open‑Meteo');
+          facts.push(`Weather: temperature ${cw.temperature}°C, wind ${cw.windspeed} m/s`);
+          meta.push('Open-Meteo');
         }
       }
 
-      // Web içerikleri: metinden özet ve çıkarımlar
       const webSummaries = webTexts.map(w => summarizeWeb(w.text));
       webSummaries.forEach((ws, i) => {
         facts.push(`Web${i+1}: ${ws.key} — ${truncate(ws.summary, 300)}`);
@@ -427,27 +424,27 @@
       const linksMd = el.showSources.checked ? buildLinks(srcLinks) : '';
 
       const response =
-`## Sorgu
-**İstek:** ${q}
+`## Query
+**Request:** ${q}
 
-### Kısa özet
-${summary || 'Kaynaklardan doğrudan özet bulunamadı; toplanan bilgilerle derlenmiş yanıt sunuluyor.'}
+### Short Summary
+${summary || 'No direct summary from sources; a synthesized response is provided based on collected data.'}
 
-### Derlenen bilgiler
-${facts.length ? facts.map(f => `- **Bilgi:** ${f}`).join('\n') : '- **Bilgi:** Konu çok özgül veya kaynaklar sınırlı; yine de rehber adımlarıyla ilerleyelim.'}
+### Compiled Information
+${facts.length ? facts.map(f => `- **Info:** ${f}`).join('\n') : '- **Info:** Topic too specific or sources limited; proceeding with guidance steps.'}
 
-${table ? '\n### Tablo\n' + table : ''}
+${table ? '\n### Table\n' + table : ''}
 
-### Uygulanabilir adımlar
-- **Netleştir:** Konuyu ve beklediğin çıktıyı (tablo/kod/rapor).
-- **Kaynak doğrulama:** Bağlantıları tek tek açıp kesitleri kontrol et.
-- **Derinleştir:** Spesifik anahtar kelimelerle (yer, tarih, teknik terim) yeni sorgu.
+### Actionable Steps
+- **Clarify:** Your topic and expected output (table/code/report).
+- **Verify:** Check links individually and review text portions.
+- **Refine:** Use more specific keywords (place, date, technical term).
 
-### Kaynaklar
-${linksMd || 'Kamu API’leri ve web metni kullanıldı; bazı siteler CORS kısıtlı olabilir.'}
+### Sources
+${linksMd || 'Public APIs and web text were used; some sites may be CORS-restricted.'}
 
-### Kısa sonuç
-- **Yol:** Yukarıdaki bulguları başlangıç kabul edip daha odaklı soruyla genişletelim.`;
+### Brief Conclusion
+- **Path:** Use the above findings as a starting point and follow up with a more focused query.`;
 
       return response;
     }
@@ -456,7 +453,7 @@ ${linksMd || 'Kamu API’leri ve web metni kullanıldı; bazı siteler CORS kıs
       if (!items || items.length === 0) return '';
       const rows = items.slice(0,8).map((x,i) => `| ${i+1} | ${x} |`).join('\n');
       return [
-        '| # | Derlenen bilgi |',
+        '| # | Compiled Information |',
         '|---|---|',
         rows
       ].join('\n');
@@ -464,13 +461,12 @@ ${linksMd || 'Kamu API’leri ve web metni kullanıldı; bazı siteler CORS kıs
 
     function buildLinks(links) {
       if (!links || links.length === 0) return '';
-      return links.slice(0,10).map(l => `- **Kaynak:** [${l.label}](${l.url})`).join('\n');
+      return links.slice(0,10).map(l => `- **Source:** [${l.label}](${l.url})`).join('\n');
     }
 
-    // Basit web metni özetleyici (heuristic)
     function summarizeWeb(text) {
       const lines = (text || '').split('\n').map(s => s.trim()).filter(Boolean);
-      const key = (lines[0] || 'Web içeriği').slice(0, 80);
+      const key = (lines[0] || 'Web content').slice(0, 80);
       const body = lines.slice(1).join(' ');
       const summary = body.split(/\s+/).slice(0,120).join(' ');
       return { key, summary };
@@ -478,7 +474,6 @@ ${linksMd || 'Kamu API’leri ve web metni kullanıldı; bazı siteler CORS kıs
 
     function truncate(s, n) { if (!s) return ''; return s.length <= n ? s : s.slice(0, n) + '…'; }
 
-    // Akış
     async function handleSend() {
       const text = el.input.value.trim();
       if (!text) return;
@@ -503,17 +498,16 @@ ${linksMd || 'Kamu API’leri ve web metni kullanıldı; bazı siteler CORS kıs
         push('assistant', answer);
       } catch (e) {
         if (removeSk) removeSk();
-        push('assistant', `## Bağlantı/erişim hatası\n- **Durum:** ${e.message}\n- **Öneri:** Kaynak kısıtlı olabilir (CORS). Sorguyu yeniden ifade et veya farklı anahtar kelime kullan.`);
+        push('assistant', `## Connection/Access Error\n- **Status:** ${e.message}\n- **Suggestion:** Source may be restricted (CORS). Rephrase the query or try different keywords.`);
       }
     }
 
-    // Events
     el.send.addEventListener('click', handleSend);
     el.input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); handleSend(); } });
     el.clearChat.addEventListener('click', () => { messages = []; el.chat.innerHTML = ''; persistChat(); });
     el.newChat.addEventListener('click', () => {
       messages = []; el.chat.innerHTML = '';
-      push('assistant', `Merhaba! Ben “${botName}”. Anahtarsız gerçek web kaynaklarından veriyi derleyip animasyonlu yanıt veririm. Ne öğrenmek istiyorsun?`);
+      push('assistant', `Hello! I am “${botName}”. You can ask me anything. What would you like to learn?`);
     });
     el.exportChat.addEventListener('click', () => {
       const blob = new Blob([JSON.stringify({ bot: botName, messages }, null, 2)], { type: 'application/json' });
@@ -522,12 +516,12 @@ ${linksMd || 'Kamu API’leri ve web metni kullanıldı; bazı siteler CORS kıs
       URL.revokeObjectURL(url);
     });
 
-    // Boot
     loadChat();
     if (messages.length === 0) {
-      push('assistant', `Merhaba İstanbul! Ben “${botName}”. Gerçek web’den veri toplayıp sentezlerim. Örn: “Çekmeköy yağmur suyu altyapısı—kaynak ve tablo”, “Türkiye deprem yönetmeliği karşılaştırması—linkli özet”.`);
+      push('assistant', `Hello Istanbul! I am “${botName}”. I collect data from the real web and synthesize it. Example: “London rainwater infrastructure—sources + table”, “Italy earthquake regulation comparison—linked summary”.`);
     }
   </script>
+
   <script>
 function addMsg(role, content, animate=true) {
   const wrap = document.createElement('div');
@@ -537,82 +531,20 @@ function addMsg(role, content, animate=true) {
   avatar.textContent = role === 'user' ? 'S' : '.';
   const body = document.createElement('div');
   body.className = 'content';
-  
-  // Tarih ekle
+
+  // Add timestamp
   const timestamp = document.createElement('div');
   timestamp.className = 'small fade';
   const now = new Date();
   timestamp.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   body.appendChild(timestamp);
-  
+
   wrap.appendChild(avatar);
   wrap.appendChild(body);
   el.chat.appendChild(wrap);
   scrollBottom();
 
-  if (!animate || role === 'user') {
-    body.innerHTML += '<br/>' + (el.markdown.checked ? renderMarkdown(content) : content);
-  } else {
-    typeWithAnimation(body, content, Number(el.typeSpeed.value || 12));
-  }
-}
-
-</script>
-<script>
-// 2. seçenek: İnsan mantığı simülasyonu
-async function humanLikeSynthesize(query) {
-  const thoughts = [
-    "Önce konuyu genel olarak değerlendiriyorum…",
-    "Benzer örnekleri ve mantıksal ilişkileri göz önünde bulunduruyorum…",
-    "Adım adım çözüm ve öneri planı oluşturuyorum…",
-    "Sonuçları özetleyip anlaşılır bir şekilde sunuyorum."
-  ];
-
-  const steps = [
-    "- Bilgileri topla ve doğruluğunu kontrol et",
-    "- Önemli noktaları kategorize et",
-    "- Benzer durumları referans al",
-    "- Nihai öneriyi açık ve kısa sun"
-  ];
-
-  return `## 2. Seçenek (İnsan Mantığı)\n**Sorgu:** ${query}\n\n**Düşünceler:**\n${thoughts.join('\n')}\n\n**Adımlar:**\n${steps.join('\n')}\n\n**Not:** Bu yanıt insan mantığı simülasyonu ile oluşturulmuştur.`;
-}
-
-// handleSend fonksiyonunu güncelle
-const originalHandleSend = handleSend;
-handleSend = async function() {
-  const text = el.input.value.trim();
-  if (!text) return;
-  el.input.value = '';
-  push('user', text);
-
-  let removeSk = null;
-  if (el.skeletonLoad.checked) {
-    const last = document.createElement('div');
-    last.className = 'msg bot';
-    const avatar = document.createElement('div'); avatar.className = 'avatar'; avatar.textContent = 'O';
-    const body = document.createElement('div'); body.className = 'content';
-    last.appendChild(avatar); last.appendChild(body);
-    el.chat.appendChild(last);
-    removeSk = showSkeletonLines(body, 6);
-    scrollBottom();
-  }
-
-  try {
-    // Ana yanıt
-    const answer = await orchestrate(text);
-    if (removeSk) removeSk();
-    push('assistant', answer);
-
-    // İnsan mantığı alternatifi
-    const alt = await humanLikeSynthesize(text);
-    push('assistant', alt);
-
-  } catch (e) {
-    if (removeSk) removeSk();
-    push('assistant', `## Bağlantı/erişim hatası\n- **Durum:** ${e.message}\n- **Öneri:** Kaynak kısıtlı olabilir (CORS). Sorguyu yeniden ifade et veya farklı anahtar kelime kullan.`);
-  }
-};
+  if...
 </script>
 
 </body>
