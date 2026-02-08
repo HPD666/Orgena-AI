@@ -1455,16 +1455,23 @@ function escapeAttr(s){
   }
 }
 
-/* ---------- Safe Math Evaluator ---------- */
+/* ---------- Powerful Math Evaluator (UNSAFE) ---------- */
 const MATH_FUNCS = {
-  'sqrt': v=>Math.sqrt(v),
-  'sin': v=>Math.sin(v),
-  'cos': v=>Math.cos(v),
-  'tan': v=>Math.tan(v),
-  'abs': v=>Math.abs(v),
-  'ln': v=>Math.log(v),
-  'log': v=>Math.log10 ? Math.log10(v) : Math.log(v)/Math.LN10,
-  'pow': (a,b)=>Math.pow(a,b)
+  'sqrt': v => Math.sqrt(v),
+  'sin': v => Math.sin(v),
+  'cos': v => Math.cos(v),
+  'tan': v => Math.tan(v),
+  'abs': v => Math.abs(v),
+  'ln': v => Math.log(v),
+  'log': v => Math.log10 ? Math.log10(v) : Math.log(v)/Math.LN10,
+  'pow': (a,b) => Math.pow(a,b),
+  'exp': v => Math.exp(v),
+  'pi': () => Math.PI,
+  'e': () => Math.E,
+  'random': () => Math.random(),
+  'floor': v => Math.floor(v),
+  'ceil': v => Math.ceil(v),
+  'round': v => Math.round(v)
 };
 
 function isMathInput(s){
@@ -1472,6 +1479,7 @@ function isMathInput(s){
     if(!s) return false;
     const t = s.trim();
     if(t.startsWith('=')) return true;
+    // Allow more characters for advanced math
     const allowed = /^[0-9+\-*/^().,%\s]+$|[a-zA-Z]/;
     return allowed.test(t) && /[0-9]/.test(t);
   } catch(e) {
@@ -1481,20 +1489,42 @@ function isMathInput(s){
 
 function safeEvaluate(expr){
   try {
-    const cleaned = expr.trim().replace(/^\=/,'');
-    // Simple safe evaluation for basic arithmetic
-    if (/^[\d+\-*/().\s]+$/.test(cleaned)) {
-      const result = Function('"use strict"; return (' + cleaned + ')')();
-      if (typeof result === 'number' && !isNaN(result)) {
-        return {ok: true, value: result, steps: ['Direct evaluation']};
-      }
+    let cleaned = expr.trim().replace(/^\=/,'').trim();
+    
+    // Replace common math functions and constants
+    cleaned = cleaned.replace(/pi/gi, 'Math.PI');
+    cleaned = cleaned.replace(/e/gi, 'Math.E');
+    cleaned = cleaned.replace(/sqrt\(/gi, 'Math.sqrt(');
+    cleaned = cleaned.replace(/sin\(/gi, 'Math.sin(');
+    cleaned = cleaned.replace(/cos\(/gi, 'Math.cos(');
+    cleaned = cleaned.replace(/tan\(/gi, 'Math.tan(');
+    cleaned = cleaned.replace(/abs\(/gi, 'Math.abs(');
+    cleaned = cleaned.replace(/ln\(/gi, 'Math.log(');
+    cleaned = cleaned.replace(/log\(/gi, 'Math.log10(');
+    cleaned = cleaned.replace(/pow\(/gi, 'Math.pow(');
+    cleaned = cleaned.replace(/exp\(/gi, 'Math.exp(');
+    cleaned = cleaned.replace(/floor\(/gi, 'Math.floor(');
+    cleaned = cleaned.replace(/ceil\(/gi, 'Math.ceil(');
+    cleaned = cleaned.replace(/round\(/gi, 'Math.round(');
+    cleaned = cleaned.replace(/\^/g, '**'); // Convert ^ to ** for exponentiation
+    
+    // WARNING: Using Function constructor - POTENTIALLY UNSAFE
+    // This allows execution of arbitrary JavaScript
+    const result = Function('"use strict"; return (' + cleaned + ')')();
+    
+    if (typeof result === 'number' && !isNaN(result)) {
+      return {
+        ok: true, 
+        value: result, 
+        steps: [`Evaluated: ${expr} = ${result}`]
+      };
     }
-    return {ok: false, error: 'Complex expressions not supported in safe mode'};
+    
+    return {ok: false, error: 'Result is not a valid number'};
   } catch(e) {
     return {ok: false, error: e.message || String(e)};
   }
 }
-
 /* ---------- Web Research ---------- */
 async function performWebSearch(query){
   try {
