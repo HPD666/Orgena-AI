@@ -1,551 +1,2054 @@
-<!DOCTYPE html>
+<!doctype HTML>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Orgena AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --bg: #0e0f13; --panel: #161822; --text: #e7e9f3; --muted: #a7adc8;
-      --accent: #6ea8fe; --accent2: #8ce89a; --danger: #ff6b6b; --border: #262a3a;
-      --link: #9ecbff;
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Orgena AI</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --card: #0f1724;
+    --accent: #06b6d4;
+    --muted: #94a3b8;
+    --text: #e6eef6;
+    --sidebar-bg: #071029;
+    --border: rgba(255, 255, 255, 0.1);
+    --hover: rgba(255, 255, 255, 0.05);
+    --user-bg: linear-gradient(135deg, #0b6bff, #0a4bd6);
+    --ai-bg: rgba(255, 255, 255, 0.07);
+    --shadow: rgba(2, 6, 23, 0.4);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    
+    /* Day mode variables */
+    --day-bg: linear-gradient(180deg, #f8fafc, #f1f5f9);
+    --day-card: #ffffff;
+    --day-accent: #0284c7;
+    --day-muted: #64748b;
+    --day-text: #0f172a;
+    --day-sidebar: #f1f5f9;
+    --day-border: rgba(0, 0, 0, 0.1);
+    --day-hover: rgba(0, 0, 0, 0.05);
+    --day-ai-bg: rgba(0, 0, 0, 0.03);
+    --day-shadow: rgba(0, 0, 0, 0.1);
+  }
+
+  .day-mode {
+    --bg: var(--day-bg);
+    --card: var(--day-card);
+    --accent: var(--day-accent);
+    --muted: var(--day-muted);
+    --text: var(--day-text);
+    --sidebar-bg: var(--day-sidebar);
+    --border: var(--day-border);
+    --hover: var(--day-hover);
+    --ai-bg: var(--day-ai-bg);
+    --shadow: var(--day-shadow);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
+    overflow: hidden;
+  }
+
+  .app-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .sidebar-header {
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-header h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .new-chat-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-size: 14px;
+  }
+
+  .new-chat-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb, 6, 182, 212), 0.2);
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+  }
+
+  .chats-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .chats-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chats-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chats-list::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 3px;
+  }
+
+  .chat-item {
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chat-item:hover {
+    background: var(--hover);
+  }
+
+  .chat-item.active {
+    background: rgba(var(--accent-rgb, 6, 182, 212), 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .chat-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+  }
+
+  .chat-date {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* Main content */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    backdrop-filter: blur(10px);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .header-left h1 {
+    font-size: 20px;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .theme-toggle {
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .theme-toggle:hover {
+    background: var(--hover);
+  }
+
+  .theme-icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+  }
+
+  .chat-container {
+    flex: 1;
+    overflow: hidden;
+    padding: 24px;
+    position: relative;
+  }
+
+  .chat {
+    max-width: 800px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--card);
+    margin-bottom: 20px;
+    min-height: 400px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px var(--shadow);
+  }
+
+  .messages::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .messages::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 4px;
+  }
+
+  .msg {
+    margin: 20px 0;
+    display: flex;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user {
+    justify-content: flex-end;
+  }
+
+  .bubble {
+    max-width: 85%;
+    padding: 14px 18px;
+    border-radius: 16px;
+    background: var(--ai-bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid var(--border);
+  }
+
+  .bubble.user {
+    background: var(--user-bg);
+    color: white;
+    border: none;
+    border-bottom-right-radius: 4px;
+  }
+
+  .bubble.ai {
+    border-bottom-left-radius: 4px;
+  }
+
+  .composer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    align-items: center;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 6, 182, 212), 0.1);
+  }
+
+  .composer button {
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    min-width: fit-content;
+  }
+
+  .composer button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb, 6, 182, 212), 0.2);
+  }
+
+  .composer button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    text-align: center;
+    padding: 8px;
+  }
+
+  .meta code {
+    background: var(--hover);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 11px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .small {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .steps {
+    font-size: 14px;
+    color: var(--text);
+    margin-top: 16px;
+    background: var(--hover);
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent);
+  }
+
+  .cite {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 12px;
+    font-style: italic;
+  }
+
+  .link {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .link:hover {
+    text-decoration: underline;
+  }
+
+  .result-card {
+    background: var(--hover);
+    padding: 16px;
+    border-radius: 10px;
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+  }
+
+  .result-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .result-title {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .result-snippet {
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .result-link {
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 8px;
+    display: block;
+    text-decoration: none;
+  }
+
+  .result-link:hover {
+    text-decoration: underline;
+  }
+
+  .typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: var(--ai-bg);
+    margin: 12px 0;
+    border: 1px solid var(--border);
+  }
+
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  .typing-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: typing 1.4s infinite ease-in-out;
+  }
+
+  .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+  .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+  @keyframes typing {
+    0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  .followups {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .followup {
+    background: var(--hover);
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .followup:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .confidence {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: var(--hover);
+    border-radius: 10px;
+    display: inline-block;
+  }
+
+  .error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  .success-message {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  .chat-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .chat-action-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .chat-action-btn:hover {
+    color: var(--text);
+    background: var(--hover);
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .app-container {
+      flex-direction: column;
     }
-    * { box-sizing: border-box }
-    html, body { height: 100%; background: var(--bg); color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
-    body { margin: 0; display: grid; grid-template-rows: auto 1fr auto; }
-    header { padding: 14px 16px; border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, #141722 0%, #10121a 100%); display: flex; align-items: center; gap: 12px; }
-    header h1 { margin: 0; font-size: 18px; letter-spacing: 0.3px }
-    header .status { margin-left: auto; font-size: 12px; color: var(--muted) }
-    header .badge { display:inline-block; padding:2px 8px; border:1px solid var(--border);
-      border-radius: 999px; font-size: 12px; color: var(--muted) }
-    .container { display: grid; grid-template-columns: 320px 1fr; min-height: 0 }
-    aside { border-right: 1px solid var(--border); background: var(--panel); overflow: auto; padding: 12px; }
-    main { display: grid; grid-template-rows: 1fr auto; min-height: 0 }
-    .chat { overflow: auto; padding: 18px; }
-    .msg { display: grid; grid-template-columns: 40px 1fr; gap: 10px;
-      padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; }
-    .msg.user { background: #1c2030 }
-    .msg.bot { background: #151a27; border: 1px solid var(--border) }
-    .avatar { width: 40px; height: 40px; border-radius: 8px; background: #0c101a;
-      display:flex; align-items:center; justify-content:center; font-weight: 700; color: var(--accent); border:1px solid var(--border); }
-    .content { white-space: pre-wrap; line-height: 1.6 }
-    .content a { color: var(--link); text-decoration: none }
-    .content a:hover { text-decoration: underline }
-    .content code { background: #0f1320; padding: 2px 5px; border-radius: 6px; border:1px solid #1f2440 }
-    .tools { padding: 12px; border-top: 1px solid var(--border); background: #131622; }
-    .row { display:flex; gap: 8px; }
-    textarea { flex: 1; resize: none; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
-      background: #101423; color: var(--text); min-height: 70px; outline: none; }
-    button, select, input[type="text"], input[type="number"], input[type="checkbox"] {
-      background: #0f1422; color: var(--text); border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px;
+
+    .sidebar {
+      width: 100%;
+      height: 60px;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
     }
-    button { cursor: pointer }
-    button.primary { background: #132244; border-color: #1d376e }
-    button[disabled] { opacity: .6; cursor: not-allowed }
-    .settings { display: grid; gap: 12px; }
-    .settings h2 { font-size: 14px; margin: 8px 0; color: var(--muted) }
-    .kv { display: grid; grid-template-columns: 1fr; gap: 8px }
-    .kv label { font-size: 12px; color: var(--muted) }
-    .pill { display:flex; gap:6px; align-items:center; flex-wrap: wrap }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .small { font-size: 12px; color: var(--muted) }
-    .danger { color: var(--danger) }
-    .bar { display:flex; gap:8px; align-items:center; justify-content: space-between; padding: 8px 0 }
-    .right { margin-left: auto }
-    .footer { padding: 8px 16px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); background:#10131c }
-    .chip { display:inline-block; padding:2px 8px; border:1px dashed var(--border); border-radius: 999px;
-      font-size: 12px; color: var(--muted); margin-right: 6px }
-    .hl { color: var(--accent2); }
-    .fade { opacity: .85 }
-    .skeleton { background: linear-gradient(90deg, #151a27 25%, #1b2132 37%, #151a27 63%); background-size: 400% 100%; animation: shimmer 1.4s infinite; height: 12px; border-radius: 6px; margin: 6px 0; }
-    @keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
-    .typing { display:inline-block; border-right: 2px solid var(--accent); animation: caret 1s steps(1) infinite; }
-    @keyframes caret { 50% { border-right-color: transparent } }
-  </style>
+
+    .sidebar.collapsed {
+      height: 60px;
+    }
+
+    .chats-list {
+      display: none;
+    }
+
+    .sidebar.expanded .chats-list {
+      display: flex;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--sidebar-bg);
+      border-top: 1px solid var(--border);
+      max-height: 300px;
+      z-index: 1000;
+    }
+
+    .bubble {
+      max-width: 95%;
+    }
+
+    .composer {
+      flex-wrap: wrap;
+    }
+
+    .composer button {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .chat-container {
+      padding: 12px;
+    }
+
+    .messages {
+      padding: 12px;
+    }
+
+    .composer button span {
+      display: none;
+    }
+
+    .composer button .icon {
+      margin: 0;
+    }
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="avatar">.</div>
-    <h1>Orgena</h1>
-    <span class="badge">Web-based</span>
-    <span class="status" id="status"> Researcher AI</span>
-  </header>
+  <div class="app-container">
+    <!-- Sidebar for chat history -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h1>Orgena AI</h1>
+        <button id="newChat" class="new-chat-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>New Chat</span>
+        </button>
+      </div>
+      
+      <div class="chats-list" id="chatsList">
+        <!-- Chat items will be dynamically added here -->
+      </div>
+      
+      <div class="sidebar-footer">
+        <div class="small">The "Fully online" AI demo</div>
+      </div>
+    </div>
 
-  <div class="container">
-    <aside>
-      <div class="settings">
-        <h2>Response Settings</h2>
-
-        <div class="kv">
-          <label>Format</label>
-          <div class="pill">
-            <label class="small"><input type="checkbox" id="markdown" checked> Markdown</label>
-            <label class="small"><input type="checkbox" id="richTables" checked> Rich tables</label>
-            <label class="small"><input type="checkbox" id="codeBlocks" checked> Code blocks</label>
-            <label class="small"><input type="checkbox" id="showSources" checked> Source links</label>
+    <!-- Main content area -->
+    <div class="main-content">
+      <header class="app-header">
+        <div class="header-left">
+          <h1>Orgena AI</h1>
+          <div class="controls">
+            <div class="small">The "Fully online" AI demo</div>
           </div>
         </div>
+        <button id="themeToggle" class="theme-toggle">
+          <svg id="themeIcon" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <!-- Moon icon for night mode -->
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+          </svg>
+          <span id="themeText">Night Mode</span>
+        </button>
+      </header>
 
-        <div class="kv">
-          <div class="pill">
-            <label class="small">Speed (ms/char) <input type="number" id="typeSpeed" min="1" max="50" step="1" value="10"></label>
-            <label class="small"><input type="checkbox" id="skeletonLoad" checked> Loading stripes</label>
+      <div class="chat-container">
+        <div class="chat">
+          <div id="chat" class="messages" aria-live="polite">
+            <!-- Messages will appear here -->
           </div>
-        </div>
 
-        <h2>Keyless Sources</h2>
-        <div class="pill">
-          <label class="small"><input type="checkbox" id="useDDG" checked> DuckDuckGo IA</label>
-          <label class="small"><input type="checkbox" id="useWiki" checked> Wikipedia search/summary</label>
-          <label class="small"><input type="checkbox" id="useWikidata" checked> Wikidata</label>
-          <label class="small"><input type="checkbox" id="useWeather"> Open-Meteo (weather)</label>
-          <label class="small"><input type="checkbox" id="useWikiLinks" checked> Wikipedia external links</label>
-        </div>
-
-        <div class="kv">
-          <label>Advanced</label>
-          <div class="pill">
-            <label class="small"><input type="checkbox" id="useJina" checked> Web content fetch (r.jina.ai)</label>
+          <div class="composer">
+            <input id="input" type="text" placeholder="Ask me anything... (use = for math, web: for research)" />
+            <button id="send">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+              </svg>
+              <span>Send</span>
+            </button>
+            <button id="research">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Research</span>
+            </button>
+            <button id="remember">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span>Remember</span>
+            </button>
           </div>
-        </div>
-
-        <h2>Chat</h2>
-        <div class="bar">
-          <button id="newChat">New chat</button>
-          <button id="exportChat">Export</button>
-          <button id="clearChat" class="danger">Clear</button>
-        </div>
-
-        <div class="kv">
-          <label class="small">Note</label>
-          <div class="small fade">On CORS-restricted sources, text is automatically read via “r.jina.ai”.</div>
+          <div class="meta">Tip: start math with <code>=</code>, or type <code>web: climate change</code>. Chats are automatically saved.</div>
         </div>
       </div>
-    </aside>
-
-    <main>
-      <div id="chat" class="chat"></div>
-      <div class="tools">
-        <div class="row">
-          <textarea id="input" placeholder="Ask anything: technical, comparison, report, table, weather, wiki, real web…" rows="3"></textarea>
-          <button id="send" class="primary">Send</button>
-        </div>
-        <div class="bar">
-          <div class="chip">Orgena active</div>
-          <div class="chip">Real web compilation</div>
-          <span class="small right">World-focused content possible</span>
-        </div>
-      </div>
-    </main>
+    </div>
   </div>
 
-  <div class="footer">
-    <span>Ask anything… but don’t ask how I am. I can’t answer that :)</span>
-  </div>
+<script>
+// Error handling wrapper
+function safeExecute(fn, fallback = () => {}) {
+  return function(...args) {
+    try {
+      return fn.apply(this, args);
+    } catch (error) {
+      console.error('Error in', fn.name || 'anonymous function:', error);
+      try {
+        return fallback.apply(this, args);
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        return null;
+      }
+    }
+  };
+}
 
-  <script>
-    const el = {
-      chat: document.getElementById('chat'),
-      input: document.getElementById('input'),
-      send: document.getElementById('send'),
-      status: document.getElementById('status'),
-      markdown: document.getElementById('markdown'),
-      richTables: document.getElementById('richTables'),
-      codeBlocks: document.getElementById('codeBlocks'),
-      typeSpeed: document.getElementById('typeSpeed'),
-      skeletonLoad: document.getElementById('skeletonLoad'),
-      useDDG: document.getElementById('useDDG'),
-      useWiki: document.getElementById('useWiki'),
-      useWikidata: document.getElementById('useWikidata'),
-      useWeather: document.getElementById('useWeather'),
-      useWikiLinks: document.getElementById('useWikiLinks'),
-      useJina: document.getElementById('useJina'),
-      showSources: document.getElementById('showSources'),
-      newChat: document.getElementById('newChat'),
-      exportChat: document.getElementById('exportChat'),
-      clearChat: document.getElementById('clearChat'),
+// Chat Management System with error handling
+class ChatManager {
+  constructor() {
+    this.chats = [];
+    this.currentChatId = null;
+    this.currentMessages = [];
+    this.initialize();
+  }
+  
+  initialize = safeExecute(function() {
+    const savedChats = localStorage.getItem('orgena_chats');
+    this.chats = savedChats ? JSON.parse(savedChats) : [];
+    
+    // Validate and clean up corrupted data
+    this.chats = this.chats.filter(chat => 
+      chat && 
+      chat.id && 
+      chat.title && 
+      Array.isArray(chat.messages)
+    );
+    
+    // Initialize with a default chat if none exists
+    if (this.chats.length === 0) {
+      this.createNewChat();
+    } else {
+      // Load the most recent chat
+      const recentChat = this.chats[this.chats.length - 1];
+      this.loadChat(recentChat.id);
+    }
+  }, function() {
+    // Fallback initialization
+    this.chats = [];
+    this.createNewChat();
+  });
+  
+  createNewChat = safeExecute(function() {
+    const chatId = 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const chat = {
+      id: chatId,
+      title: 'New Chat',
+      messages: [],
+      createdAt: new Date().toISOString(),
+      lastActive: Date.now()
     };
-    const botName = 'Orgena';
-    let messages = [];
-
-    // Minimal Markdown renderer (lead-in bold for list items)
-    function renderMarkdown(md) {
-      let s = md;
-      s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      s = s.replace(/^###### (.*)$/gm, '<h6>$1</h6>');
-      s = s.replace(/^##### (.*)$/gm, '<h5>$1</h5>');
-      s = s.replace(/^#### (.*)$/gm, '<h4>$1</h4>');
-      s = s.replace(/^### (.*)$/gm, '<h3>$1</h3>');
-      s = s.replace(/^## (.*)$/gm, '<h2>$1</h2>');
-      s = s.replace(/^# (.*)$/gm, '<h1>$1</h1>');
-      s = s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
-      s = s.replace(/^- (.*)$/gm, '<li><strong>$1:</strong></li>');
-      s = s.replace(/(\n<li>.*<\/li>)+/g, m => `<ul>${m}</ul>`);
-      s = s.replace(/\[(.*?)\]`\((.*?)\)`/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-      s = s.replace(/\n/g, '<br/>');
-      return s;
+    
+    this.chats.push(chat);
+    this.currentChatId = chatId;
+    this.currentMessages = [];
+    
+    this.saveChats();
+    this.updateChatList();
+    
+    // Clear the chat UI
+    const chatContainer = document.getElementById('chat');
+    if (chatContainer) {
+      chatContainer.innerHTML = '';
     }
-
-    function addMsg(role, content, animate=true) {
-      const wrap = document.createElement('div');
-      wrap.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
-      const avatar = document.createElement('div');
-      avatar.className = 'avatar';
-      avatar.textContent = role === 'user' ? 'S' : 'O';
-      const body = document.createElement('div');
-      body.className = 'content';
-      wrap.appendChild(avatar);
-      wrap.appendChild(body);
-      el.chat.appendChild(wrap);
-      scrollBottom();
-
-      if (!animate || role === 'user') {
-        body.innerHTML = el.markdown.checked ? renderMarkdown(content) : content;
-      } else {
-        typeWithAnimation(body, content, Number(el.typeSpeed.value || 12));
-      }
+    
+    // Show welcome message after a short delay
+    setTimeout(() => {
+      this.addMessage('ai', "Hi! I'm Orgena AI, running locally in your browser. How can I help you today?");
+    }, 100);
+    
+    return chatId;
+  }, function() {
+    // Fallback: create simple chat object
+    const chatId = 'chat_fallback_' + Date.now();
+    this.currentChatId = chatId;
+    this.currentMessages = [];
+    return chatId;
+  });
+  
+  loadChat = safeExecute(function(chatId) {
+    const chat = this.chats.find(c => c && c.id === chatId);
+    if (!chat) {
+      console.error('Chat not found:', chatId);
+      return;
     }
-
-    function typeWithAnimation(node, text, speed=12) {
-      const md = el.markdown.checked ? renderMarkdown(text) : text;
-      const temp = document.createElement('div'); temp.innerHTML = md;
-      const plain = temp.textContent || text;
-      node.innerHTML = '';
-      const span = document.createElement('span'); span.className = 'typing'; node.appendChild(span);
-      let i = 0;
-      const timer = setInterval(() => {
-        span.textContent = plain.slice(0, i);
-        i++;
-        if (i > plain.length) { clearInterval(timer); node.innerHTML = md; }
-        node.scrollIntoView({ behavior:'smooth', block:'end' });
-      }, speed);
-    }
-
-    function showSkeletonLines(parent, count=5) {
-      const box = document.createElement('div');
-      for (let i=0;i<count;i++) {
-        const sk = document.createElement('div'); sk.className = 'skeleton';
-        sk.style.width = (60 + Math.random()*35) + '%';
-        box.appendChild(sk);
-      }
-      parent.appendChild(box);
-      return () => box.remove();
-    }
-
-    function push(role, content) {
-      messages.push({ role, content });
-      addMsg(role, content, role==='assistant');
-      persistChat();
-    }
-
-    function scrollBottom() { el.chat.scrollTop = el.chat.scrollHeight; }
-    function persistChat() { try { localStorage.setItem('sf_chat', JSON.stringify(messages)); } catch(e){} }
-    function loadChat() {
-      try {
-        const raw = localStorage.getItem('sf_chat'); if (!raw) return;
-        messages = JSON.parse(raw) || [];
-        el.chat.innerHTML = '';
-        messages.forEach(m => addMsg(m.role, m.content, false));
-      } catch(e){}
-    }
-
-    // Keyless Sources
-    async function ddgInstant(q) {
-      const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
-      const r = await fetch(url); if (!r.ok) throw new Error('DDG IA error: '+r.status);
-      const j = await r.json();
-      return {
-        source: 'DuckDuckGo',
-        abstract: j.AbstractText || '',
-        heading: j.Heading || '',
-        url: j.AbstractURL || '',
-        related: (j.RelatedTopics || []).slice(0,5).map(x => {
-          if (typeof x === 'object' && x.Text) return { text: x.Text, url: x.FirstURL };
-          return null;
-        }).filter(Boolean)
-      };
-    }
-
-    async function wikipediaSearch(q) {
-      const url = `https://tr.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Wikipedia search error: '+r.status);
-      const j = await r.json();
-      const hit = j.query?.search?.[0];
-      if (!hit) return null;
-      const title = hit.title;
-      return { title, pageid: hit.pageid };
-    }
-
-    async function wikipediaSummary(title) {
-      const langOrder = ['tr','en'];
-      for (const lang of langOrder) {
-        const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-        const r = await fetch(url);
-        if (r.ok) {
-          const j = await r.json();
-          if (j.extract) {
-            return { source:'Wikipedia '+lang, title:j.title, summary:j.extract, url:j.content_urls?.desktop?.page || j.content_urls?.mobile?.page || '' };
-          }
+    
+    this.currentChatId = chatId;
+    this.currentMessages = chat.messages || [];
+    
+    // Update chat UI
+    const chatContainer = document.getElementById('chat');
+    if (chatContainer) {
+      chatContainer.innerHTML = '';
+      
+      this.currentMessages.forEach(msg => {
+        if (msg && msg.text && msg.role) {
+          this.appendMessageToUI(msg.text, msg.role);
         }
-      }
-      return null;
-    }
-
-    async function wikipediaExternalLinks(title) {
-      const url = `https://tr.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=externallinks&format=json&origin=*`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Wikipedia externallinks error: '+r.status);
-      const j = await r.json();
-      const links = j.parse?.externallinks || [];
-      return links.filter(u => /^https?:\/\//.test(u)).slice(0, 6);
-    }
-
-    async function wikidataSearch(q) {
-      const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=tr&format=json&origin=*`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Wikidata error: '+r.status);
-      const j = await r.json();
-      const item = (j.search||[])[0];
-      if (!item) return null;
-      return { source:'Wikidata', id:item.id, label:item.label, desc:item.description, url:`https://www.wikidata.org/wiki/${item.id}` };
-    }
-
-    async function openMeteo(lat, lon) {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&current_weather=true`;
-      const r = await fetch(url); if (!r.ok) throw new Error('Open-Meteo error: '+r.status);
-      const j = await r.json();
-      return { source:'Open-Meteo', data:j };
-    }
-
-    // Web content fetch (CORS-safe text reader)
-    async function readWeb(url) {
-      const proxy = `https://r.jina.ai/http://` + url.replace(/^https?:\/\//,'');
-      const r = await fetch(proxy, { headers: { 'Accept': 'text/plain' } });
-      if (!r.ok) throw new Error('Web read error: '+r.status);
-      const txt = await r.text();
-      return { source:'Web', url, text: txt.slice(0, 20000) };
-    }
-
-    // Orchestration
-    async function orchestrate(q) {
-      const lower = q.toLowerCase();
-      const sources = [];
-      const links = [];
-      const isWeather = /(hava|weather|meteoroloji|yağmur|sıcaklık)/.test(lower) && /(istanbul|çekmeköy|koordinat|lat|lon|maltepe)/.test(lower);
-
-      if (el.useDDG.checked) { try { sources.push(await ddgInstant(q)); } catch(e){} }
-
-      let wikiTitle = null;
-      if (el.useWiki.checked) {
-        try {
-          const hit = await wikipediaSearch(q);
-          if (hit && hit.title) {
-            wikiTitle = hit.title;
-            const sum = await wikipediaSummary(hit.title);
-            if (sum) {
-              sources.push(sum);
-              if (sum.url) links.push(sum.url);
-            }
-          }
-        } catch(e){}
-      }
-
-      if (el.useWikidata.checked) {
-        try {
-          const wd = await wikidataSearch(q);
-          if (wd) {
-            sources.push(wd);
-            if (wd.url) links.push(wd.url);
-          }
-        } catch(e){}
-      }
-
-      if (el.useWeather.checked && isWeather) {
-        const m = q.match(/(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)/);
-        const lat = m ? Number(m[1]) : 41.015;
-        const lon = m ? Number(m[3]) : 29.0;
-        try { sources.push(await openMeteo(lat, lon)); } catch(e){}
-      }
-
-      let webTexts = [];
-      if (el.useWikiLinks.checked && wikiTitle) {
-        try {
-          const ext = await wikipediaExternalLinks(wikiTitle);
-          const top = ext.slice(0, 4);
-          for (const u of top) {
-            if (!el.useJina.checked) break;
-            try {
-              const w = await readWeb(u);
-              webTexts.push(w);
-            } catch(e){}
-          }
-        } catch(e){}
-      }
-
-      return synthesize(q, sources, links, webTexts);
-    }
-
-    function synthesize(q, sources, links, webTexts) {
-      const srcLinks = [];
-      const facts = [];
-      let summary = '';
-      let meta = [];
-
-      for (const s of sources) {
-        if (!s) continue;
-        if (s.source?.includes('DuckDuckGo')) {
-          if (s.abstract && !summary) summary = s.abstract;
-          if (s.url) srcLinks.push({ label: s.heading || 'DuckDuckGo', url: s.url });
-          (s.related||[]).forEach(rt => srcLinks.push({ label: rt.text.slice(0,40)+'…', url: rt.url }));
-          meta.push('DDG IA');
-        } else if (String(s.source).startsWith('Wikipedia')) {
-          summary = summary || s.summary;
-          if (s.url) srcLinks.push({ label: s.title, url: s.url });
-          meta.push(s.source);
-        } else if (s.source === 'Wikidata') {
-          facts.push(`Wikidata: ${s.label} — ${s.desc || 'no description'}`);
-          if (s.url) srcLinks.push({ label: s.label || 'Wikidata', url: s.url });
-          meta.push('Wikidata');
-        } else if (s.source === 'Open-Meteo') {
-          const cw = s.data?.current_weather || {};
-          facts.push(`Weather: temperature ${cw.temperature}°C, wind ${cw.windspeed} m/s`);
-          meta.push('Open-Meteo');
-        }
-      }
-
-      const webSummaries = webTexts.map(w => summarizeWeb(w.text));
-      webSummaries.forEach((ws, i) => {
-        facts.push(`Web${i+1}: ${ws.key} — ${truncate(ws.summary, 300)}`);
-        srcLinks.push({ label: ws.key, url: webTexts[i].url });
       });
-
-      const table = el.richTables.checked ? buildTable(facts) : '';
-      const linksMd = el.showSources.checked ? buildLinks(srcLinks) : '';
-
-      const response =
-`## Query
-**Request:** ${q}
-
-### Short Summary
-${summary || 'No direct summary from sources; a synthesized response is provided based on collected data.'}
-
-### Compiled Information
-${facts.length ? facts.map(f => `- **Info:** ${f}`).join('\n') : '- **Info:** Topic too specific or sources limited; proceeding with guidance steps.'}
-
-${table ? '\n### Table\n' + table : ''}
-
-### Actionable Steps
-- **Clarify:** Your topic and expected output (table/code/report).
-- **Verify:** Check links individually and review text portions.
-- **Refine:** Use more specific keywords (place, date, technical term).
-
-### Sources
-${linksMd || 'Public APIs and web text were used; some sites may be CORS-restricted.'}
-
-### Brief Conclusion
-- **Path:** Use the above findings as a starting point and follow up with a more focused query.`;
-
-      return response;
     }
-
-    function buildTable(items) {
-      if (!items || items.length === 0) return '';
-      const rows = items.slice(0,8).map((x,i) => `| ${i+1} | ${x} |`).join('\n');
-      return [
-        '| # | Compiled Information |',
-        '|---|---|',
-        rows
-      ].join('\n');
+    
+    // Update active state in sidebar
+    this.updateChatList();
+    
+    // Update chat title if it's still "New Chat" but has messages
+    if (chat.title === 'New Chat' && chat.messages.length > 0) {
+      this.updateChatTitle(chatId);
     }
-
-    function buildLinks(links) {
-      if (!links || links.length === 0) return '';
-      return links.slice(0,10).map(l => `- **Source:** [${l.label}](${l.url})`).join('\n');
+  });
+  
+  addMessage = safeExecute(function(role, text) {
+    if (!this.currentChatId || !text || !role) {
+      console.error('Invalid message data:', { role, text });
+      return;
     }
-
-    function summarizeWeb(text) {
-      const lines = (text || '').split('\n').map(s => s.trim()).filter(Boolean);
-      const key = (lines[0] || 'Web content').slice(0, 80);
-      const body = lines.slice(1).join(' ');
-      const summary = body.split(/\s+/).slice(0,120).join(' ');
-      return { key, summary };
+    
+    const message = {
+      role,
+      text: String(text).substring(0, 5000), // Limit message length
+      timestamp: Date.now()
+    };
+    
+    this.currentMessages.push(message);
+    
+    // Limit messages per chat to prevent memory issues
+    if (this.currentMessages.length > 100) {
+      this.currentMessages = this.currentMessages.slice(-100);
     }
-
-    function truncate(s, n) { if (!s) return ''; return s.length <= n ? s : s.slice(0, n) + '…'; }
-
-    async function handleSend() {
-      const text = el.input.value.trim();
-      if (!text) return;
-      el.input.value = '';
-      push('user', text);
-
-      let removeSk = null;
-      if (el.skeletonLoad.checked) {
-        const last = document.createElement('div');
-        last.className = 'msg bot';
-        const avatar = document.createElement('div'); avatar.className = 'avatar'; avatar.textContent = 'O';
-        const body = document.createElement('div'); body.className = 'content';
-        last.appendChild(avatar); last.appendChild(body);
-        el.chat.appendChild(last);
-        removeSk = showSkeletonLines(body, 6);
-        scrollBottom();
+    
+    // Update the chat in storage
+    const chatIndex = this.chats.findIndex(c => c && c.id === this.currentChatId);
+    if (chatIndex !== -1 && this.chats[chatIndex]) {
+      this.chats[chatIndex].messages = this.currentMessages;
+      this.chats[chatIndex].lastActive = Date.now();
+      
+      // Update title if this is the first user message
+      if (this.chats[chatIndex].title === 'New Chat' && role === 'user') {
+        this.updateChatTitle(this.currentChatId, text);
       }
+    }
+    
+    this.saveChats();
+    this.updateChatList();
+  });
+  
+  updateChatTitle = safeExecute(function(chatId, firstMessage = '') {
+    const chatIndex = this.chats.findIndex(c => c && c.id === chatId);
+    if (chatIndex === -1 || !this.chats[chatIndex]) return;
+    
+    let title = 'New Chat';
+    
+    if (firstMessage) {
+      // Create a title from the first message
+      title = firstMessage.substring(0, 40).trim();
+      if (firstMessage.length > 40) title += '...';
+      if (!title) title = 'New Chat';
+    }
+    
+    this.chats[chatIndex].title = title;
+    this.saveChats();
+    this.updateChatList();
+  });
+  
+  saveChats = safeExecute(function() {
+    try {
+      // Limit total chats to prevent localStorage overflow
+      if (this.chats.length > 50) {
+        this.chats = this.chats.slice(-50);
+      }
+      
+      localStorage.setItem('orgena_chats', JSON.stringify(this.chats));
+    } catch (error) {
+      console.error('Failed to save chats:', error);
+      // Clear some space if localStorage is full
+      if (error.name === 'QuotaExceededError') {
+        this.chats = this.chats.slice(-10);
+        localStorage.setItem('orgena_chats', JSON.stringify(this.chats));
+      }
+    }
+  });
+  
+  updateChatList = safeExecute(function() {
+    const chatsList = document.getElementById('chatsList');
+    if (!chatsList) return;
+    
+    chatsList.innerHTML = '';
+    
+    // Sort chats by last active (newest first)
+    const sortedChats = [...this.chats]
+      .filter(chat => chat && chat.title)
+      .sort((a, b) => (b.lastActive || 0) - (a.lastActive || 0))
+      .slice(0, 20); // Limit displayed chats
+    
+    sortedChats.forEach(chat => {
+      const chatItem = document.createElement('div');
+      chatItem.className = `chat-item ${chat.id === this.currentChatId ? 'active' : ''}`;
+      chatItem.dataset.chatId = chat.id;
+      
+      const date = new Date(chat.createdAt);
+      const dateStr = date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      chatItem.innerHTML = `
+        <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <div style="flex: 1; min-width: 0;">
+          <div style="overflow: hidden; text-overflow: ellipsis;">${this.escapeHtml(chat.title)}</div>
+          <div class="chat-date">${this.escapeHtml(dateStr)}</div>
+        </div>
+      `;
+      
+      chatItem.addEventListener('click', () => {
+        this.loadChat(chat.id);
+      });
+      
+      chatsList.appendChild(chatItem);
+    });
+  });
+  
+  deleteChat = safeExecute(function(chatId) {
+    const chatIndex = this.chats.findIndex(c => c && c.id === chatId);
+    if (chatIndex === -1) return;
+    
+    this.chats.splice(chatIndex, 1);
+    
+    if (this.currentChatId === chatId) {
+      if (this.chats.length > 0) {
+        this.loadChat(this.chats[0].id);
+      } else {
+        this.createNewChat();
+      }
+    }
+    
+    this.saveChats();
+    this.updateChatList();
+  });
+  
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+}
 
+// Initialize Chat Manager
+const chatManager = new ChatManager();
+
+/* ======= Advanced Local AI ======= */
+
+/* ---------- Utilities ---------- */
+function randn(scale=1){ 
+  try {
+    let u=0,v=0; 
+    while(u===0) u=Math.random(); 
+    while(v===0) v=Math.random(); 
+    return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)*scale;
+  } catch(e) {
+    return (Math.random() * 2 - 1) * scale;
+  }
+}
+
+function softmax(arr){ 
+  try {
+    const max = Math.max(...arr);
+    const ex = arr.map(x=>Math.exp(x-max));
+    const s = ex.reduce((a,b)=>a+b,0);
+    return ex.map(x=>x/s);
+  } catch(e) {
+    return arr.map(() => 1/arr.length);
+  }
+}
+
+function argmax(arr){ 
+  try {
+    return arr.indexOf(Math.max(...arr));
+  } catch(e) {
+    return 0;
+  }
+}
+
+function dot(a,b){ 
+  try {
+    let s=0; 
+    for(let i=0;i<a.length;i++) s+=a[i]*b[i]; 
+    return s;
+  } catch(e) {
+    return 0;
+  }
+}
+
+function zeros(n){ 
+  return Array(n).fill(0);
+}
+
+function relu(x){ 
+  try {
+    return x.map(v=>Math.max(0,v));
+  } catch(e) {
+    return x;
+  }
+}
+
+function l2norm(v){ 
+  try {
+    return Math.sqrt(v.reduce((a,b)=>a+b*b,0)) || 1;
+  } catch(e) {
+    return 1;
+  }
+}
+
+function cosine(a,b){ 
+  try {
+    const da = dot(a,b);
+    const na = l2norm(a);
+    const nb = l2norm(b);
+    return da/(na*nb);
+  } catch(e) {
+    return 0;
+  }
+}
+
+function shuffle(a){ 
+  try {
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  } catch(e) {
+    return a;
+  }
+}
+
+function sample(arr){ 
+  try {
+    return arr[Math.floor(Math.random()*arr.length)];
+  } catch(e) {
+    return arr[0] || '';
+  }
+}
+
+function clamp(v,min,max){ 
+  return Math.max(min, Math.min(max, v));
+}
+
+/* ---------- Dataset (expanded) ---------- */
+const examples = [
+  {in:"hello", out:"Hello! What's your name?"},
+  {in:"hi", out:"Hi there. How can I help?"},
+  {in:"hey", out:"Hey — what can I do for you today?"},
+  {in:"what is your name", out:"I'm Tiny Neural AI running in your browser."},
+  {in:"who are you", out:"I'm a small neural program that replies locally."},
+  {in:"how are you", out:"I'm a program, so I don't have feelings, but I'm ready to help."},
+  {in:"remember my name is", out:"Got it. I'll remember that."},
+  {in:"what is my name", out:"I remember you as {name}."},
+  {in:"save note", out:"Saved your note."},
+  {in:"tell me a joke", out:"Why did the developer go broke? Because he used up all his cache."},
+  {in:"goodbye", out:"Goodbye. Talk soon."},
+  {in:"thanks", out:"You're welcome."},
+  {in:"thank you", out:"You're welcome — glad to help."},
+  {in:"help", out:"I can chat, remember one note, answer simple math, and answer simple questions."},
+  {in:"what can you do", out:"I can chat, do math, search the web, and remember a short note."},
+  {in:"show note", out:"You saved: {note}"},
+  {in:"clear note", out:"Your saved note is cleared."},
+  {in:"clear name", out:"Your saved name is cleared."}
+];
+const responses = Array.from(new Set(examples.map(e=>e.out)));
+
+/* ---------- Tokenizer, stopwords, TF-IDF ---------- */
+const STOPWORDS = new Set(["the","and","is","in","at","of","a","an","to","for","on","with","that","this","it","i","you","me","my","we","they","be","are","was","were","as","by","from"]);
+function tokenize(s){
+  try {
+    return s.toLowerCase()
+            .replace(/[\u2018\u2019\u201c\u201d]/g,"'")
+            .replace(/[^a-z0-9\s']/g,' ')
+            .split(/\s+/)
+            .filter(Boolean);
+  } catch(e) {
+    return s.toLowerCase().split(/\s+/).filter(Boolean);
+  }
+}
+
+function tokenizeFiltered(s){
+  return tokenize(s).filter(w=>!STOPWORDS.has(w));
+}
+
+// Build vocabulary from examples + some extras
+const vocabSet = new Set();
+examples.forEach(e=>tokenizeFiltered(e.in).forEach(w=>vocabSet.add(w)));
+["name","remember","note","joke","help","math","search","web","remember","save","clear","example","how","what"].forEach(w=>vocabSet.add(w));
+const vocab = Array.from(vocabSet);
+
+// TF-IDF matrix for examples
+const docTokens = examples.map(e=>tokenizeFiltered(e.in));
+const df = {};
+docTokens.forEach(toks=>{
+  const seen = new Set();
+  toks.forEach(w=>{ if(!seen.has(w)){ df[w]=(df[w]||0)+1; seen.add(w); }});
+});
+const N_DOCS = examples.length;
+function tfidfVector(text){
+  try {
+    const toks = tokenizeFiltered(text);
+    const tf = {};
+    toks.forEach(w=> tf[w]=(tf[w]||0)+1);
+    const vec = vocab.map(w=>{
+      const tfw = tf[w] || 0;
+      const idf = Math.log(1 + (N_DOCS / ((df[w]||0)+1)));
+      return tfw * idf;
+    });
+    const norm = l2norm(vec);
+    return vec.map(v=> v / norm);
+  } catch(e) {
+    return zeros(vocab.length);
+  }
+}
+
+/* ---------- Model ---------- */
+const inputSize = Math.max(8, vocab.length);
+const hiddenSize = Math.max(64, Math.min(512, inputSize * 4));
+const outputSize = responses.length;
+
+// Initialize weights
+function initMatrix(rows, cols, scale=1){
+  const m = Array.from({length:rows}, ()=> Array.from({length:cols}, ()=> randn(scale)));
+  return m;
+}
+
+let W1 = initMatrix(hiddenSize, inputSize, Math.sqrt(2/(inputSize+hiddenSize)));
+let b1 = zeros(hiddenSize);
+let W2 = initMatrix(outputSize, hiddenSize, Math.sqrt(2/(hiddenSize+outputSize)));
+let b2 = zeros(outputSize);
+
+function forward(x){
+  try {
+    const h = W1.map((row,i)=> dot(row,x) + b1[i]);
+    const hA = relu(h);
+    const o = W2.map((row,i)=> dot(row,hA) + b2[i]);
+    const probs = softmax(o);
+    return {h, hA, o, probs};
+  } catch(e) {
+    return {probs: zeros(outputSize).map(() => 1/outputSize)};
+  }
+}
+
+// Training with error handling
+function train(epochs=600, lr=0.05, batchSize=4){
+  try {
+    const data = examples.map(e=>({x:tfidfVector(e.in), y:responses.indexOf(e.out)}));
+    const vW1 = W1.map(row=>row.map(()=>0));
+    const vb1 = b1.map(()=>0);
+    const vW2 = W2.map(row=>row.map(()=>0));
+    const vb2 = b2.map(()=>0);
+    const beta = 0.9;
+    
+    for(let ep=0; ep<epochs; ep++){
+      shuffle(data);
+      for(let i=0;i<data.length;i+=batchSize){
+        const batch = data.slice(i,i+batchSize);
+        if(batch.length === 0) continue;
+        
+        const gW1 = W1.map(row=>row.map(()=>0));
+        const gb1 = zeros(hiddenSize);
+        const gW2 = W2.map(row=>row.map(()=>0));
+        const gb2 = zeros(outputSize);
+        
+        for(const sample of batch){
+          const x = sample.x;
+          const y = sample.y;
+          const {h, hA, o, probs} = forward(x);
+          const dO = probs.slice(); 
+          if(dO[y] !== undefined) dO[y] -= 1;
+          
+          for(let ii=0; ii<outputSize; ii++){
+            for(let jj=0; jj<hiddenSize; jj++){
+              gW2[ii][jj] += dO[ii] * hA[jj];
+            }
+            gb2[ii] += dO[ii];
+          }
+          
+          const dH = zeros(hiddenSize);
+          for(let jj=0; jj<hiddenSize; jj++){
+            let s=0;
+            for(let ii=0; ii<outputSize; ii++) s += dO[ii]*W2[ii][jj];
+            dH[jj] = s * (h[jj]>0 ? 1 : 0);
+          }
+          
+          for(let jj=0; jj<hiddenSize; jj++){
+            for(let kk=0; kk<inputSize; kk++){
+              gW1[jj][kk] += dH[jj] * x[kk];
+            }
+            gb1[jj] += dH[jj];
+          }
+        }
+        
+        const scale = 1 / batch.length;
+        for(let ii=0; ii<outputSize; ii++){
+          for(let jj=0; jj<hiddenSize; jj++){
+            gW2[ii][jj] *= scale;
+            vW2[ii][jj] = beta * vW2[ii][jj] + (1-beta) * gW2[ii][jj];
+            W2[ii][jj] -= lr * vW2[ii][jj];
+          }
+          vb2[ii] = beta * vb2[ii] + (1-beta) * gb2[ii];
+          b2[ii] -= lr * vb2[ii];
+        }
+        
+        for(let jj=0; jj<hiddenSize; jj++){
+          for(let kk=0; kk<inputSize; kk++){
+            gW1[jj][kk] *= scale;
+            vW1[jj][kk] = beta * vW1[jj][kk] + (1-beta) * gW1[jj][kk];
+            W1[jj][kk] -= lr * vW1[jj][kk];
+          }
+          vb1[jj] = beta * vb1[jj] + (1-beta) * gb1[jj];
+          b1[jj] -= lr * vb1[jj];
+        }
+      }
+      if(ep>0 && ep%200===0) lr *= 0.7;
+    }
+  } catch(e) {
+    console.error('Training failed:', e);
+  }
+}
+
+/* ---------- Markov fallback ---------- */
+function buildNGram(corpus, n=3){
+  const map = {};
+  try {
+    const tokens = corpus.join(' ').toLowerCase().split(/\s+/).filter(Boolean);
+    for(let i=0;i<tokens.length;i++){
+      for(let k=1;k<=n;k++){
+        if(i+k < tokens.length){
+          const key = tokens.slice(i, i+k).join(' ');
+          const next = tokens[i+k];
+          if(!map[key]) map[key]=[];
+          map[key].push(next);
+        }
+      }
+    }
+  } catch(e) {
+    console.error('Failed to build n-gram:', e);
+  }
+  return map;
+}
+
+const markovCorpus = responses.concat([
+  "The code runs locally and learns from examples.",
+  "I can remember one short note for you.",
+  "Try asking me to remember your name.",
+  "I can search the web and summarize results.",
+  "Ask me to evaluate an expression with =."
+]);
+const markovMap = buildNGram(markovCorpus, 3);
+
+function markovGenerate(seed, len=18, temp=0.9){
+  try {
+    const toks = tokenize(seed);
+    let cur = toks.length ? toks.slice(-3).join(' ') : sample(Object.keys(markovMap));
+    const out = cur.split(' ').filter(Boolean);
+    
+    for(let i=0;i<len;i++){
+      let nexts = null;
+      for(let k=3;k>=1;k--){
+        const key = out.slice(-k).join(' ');
+        if(markovMap[key]){ nexts = markovMap[key]; break; }
+      }
+      if(!nexts) nexts = Object.keys(markovMap);
+      
+      const counts = {};
+      nexts.forEach(w=>counts[w]=(counts[w]||0)+1);
+      const items = Object.keys(counts);
+      const weights = items.map(it=>Math.pow(counts[it], 1/temp));
+      const chosen = sampleWeighted(items, weights);
+      out.push(chosen);
+    }
+    return out.join(' ');
+  } catch(e) {
+    return "I'm here to help. What would you like to know?";
+  }
+}
+
+function sampleWeighted(items, weights){
+  try {
+    const s = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random()*s;
+    for(let i=0;i<items.length;i++){ 
+      r -= weights[i]; 
+      if(r<=0) return items[i]; 
+    }
+    return items[items.length-1];
+  } catch(e) {
+    return sample(items);
+  }
+}
+
+/* ---------- Memory ---------- */
+function saveName(n){ 
+  try {
+    localStorage.setItem('tinyai_name', String(n).substring(0, 50));
+  } catch(e) {
+    console.error('Failed to save name:', e);
+  }
+}
+
+function getName(){ 
+  try {
+    return localStorage.getItem('tinyai_name');
+  } catch(e) {
+    return null;
+  }
+}
+
+function saveNote(n){ 
+  try {
+    localStorage.setItem('tinyai_note', String(n).substring(0, 500));
+  } catch(e) {
+    console.error('Failed to save note:', e);
+  }
+}
+
+function getNote(){ 
+  try {
+    return localStorage.getItem('tinyai_note');
+  } catch(e) {
+    return null;
+  }
+}
+
+/* ---------- UI Functions ---------- */
+function appendMessageToUI(text, who='ai', extraClass=''){
+  try {
+    const chatContainer = document.getElementById('chat');
+    if (!chatContainer) return;
+    
+    const m = document.createElement('div');
+    m.className = 'msg ' + (who==='user' ? 'user' : 'ai');
+    const b = document.createElement('div');
+    b.className = 'bubble ' + (who==='user' ? 'user' : 'ai') + (extraClass ? ' '+extraClass : '');
+    b.textContent = text;
+    m.appendChild(b);
+    chatContainer.appendChild(m);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  } catch(e) {
+    console.error('Failed to append message:', e);
+  }
+}
+
+function appendMessage(text, who='ai', extraClass=''){
+  try {
+    chatManager.addMessage(who, text);
+    appendMessageToUI(text, who, extraClass);
+  } catch(e) {
+    console.error('Failed to add message:', e);
+  }
+}
+
+function appendSteps(html){
+  try {
+    const chatContainer = document.getElementById('chat');
+    if (!chatContainer) return;
+    
+    const s = document.createElement('div');
+    s.className = 'steps';
+    s.innerHTML = html;
+    chatContainer.appendChild(s);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  } catch(e) {
+    console.error('Failed to append steps:', e);
+  }
+}
+
+function appendResultCard(title, snippet, url){
+  try {
+    const chatContainer = document.getElementById('chat');
+    if (!chatContainer) return;
+    
+    const c = document.createElement('div');
+    c.className = 'result-card';
+    c.innerHTML = `<div class="result-title">${escapeHtml(title)}</div>
+                   <div class="result-snippet">${escapeHtml(snippet)}</div>
+                   <a class="result-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`;
+    chatContainer.appendChild(c);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  } catch(e) {
+    console.error('Failed to append result card:', e);
+  }
+}
+
+function escapeHtml(s){ 
+  try {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  } catch(e) {
+    return String(s).replace(/[&<>]/g, c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;'
+    }[c] || c));
+  }
+}
+
+function escapeAttr(s){ 
+  try {
+    return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  } catch(e) {
+    return String(s);
+  }
+}
+
+/* ---------- Safe Math Evaluator ---------- */
+const MATH_FUNCS = {
+  'sqrt': v=>Math.sqrt(v),
+  'sin': v=>Math.sin(v),
+  'cos': v=>Math.cos(v),
+  'tan': v=>Math.tan(v),
+  'abs': v=>Math.abs(v),
+  'ln': v=>Math.log(v),
+  'log': v=>Math.log10 ? Math.log10(v) : Math.log(v)/Math.LN10,
+  'pow': (a,b)=>Math.pow(a,b)
+};
+
+function isMathInput(s){
+  try {
+    if(!s) return false;
+    const t = s.trim();
+    if(t.startsWith('=')) return true;
+    const allowed = /^[0-9+\-*/^().,%\s]+$|[a-zA-Z]/;
+    return allowed.test(t) && /[0-9]/.test(t);
+  } catch(e) {
+    return false;
+  }
+}
+
+function safeEvaluate(expr){
+  try {
+    const cleaned = expr.trim().replace(/^\=/,'');
+    // Simple safe evaluation for basic arithmetic
+    if (/^[\d+\-*/().\s]+$/.test(cleaned)) {
+      const result = Function('"use strict"; return (' + cleaned + ')')();
+      if (typeof result === 'number' && !isNaN(result)) {
+        return {ok: true, value: result, steps: ['Direct evaluation']};
+      }
+    }
+    return {ok: false, error: 'Complex expressions not supported in safe mode'};
+  } catch(e) {
+    return {ok: false, error: e.message || String(e)};
+  }
+}
+
+/* ---------- Web Research ---------- */
+async function performWebSearch(query){
+  try {
+    const q = query.trim().substring(0, 200);
+    if(!q) return {ok:false, error:'Empty query'};
+    
+    const url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(q) + '&format=json&no_html=1&skip_disambig=1';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    if(!res.ok) return {ok:false, error:'Network error: ' + res.status};
+    const data = await res.json();
+    return {ok:true, data};
+  } catch(e) {
+    return {ok:false, error: e.name === 'AbortError' ? 'Request timeout' : e.message};
+  }
+}
+
+function renderSearchResults(query, ddg){
+  try {
+    if(ddg.AbstractText && ddg.AbstractText.trim()){
+      appendMessage(`Research: ${query}`, 'ai');
+      appendResultCard(ddg.Heading || query, ddg.AbstractText, ddg.AbstractURL || ('https://duckduckgo.com/?q=' + encodeURIComponent(query)));
+      
+      if(ddg.AbstractSource){
+        const c = document.createElement('div');
+        c.className = 'cite';
+        c.innerHTML = `Source: <a class="link" href="${escapeAttr(ddg.AbstractURL||'https://duckduckgo.com/?q='+encodeURIComponent(query))}" target="_blank" rel="noopener noreferrer">${escapeHtml(ddg.AbstractSource)}</a>`;
+        document.getElementById('chat').appendChild(c);
+      }
+    } else {
+      appendMessage(`Research: ${query}`, 'ai');
+    }
+    
+    const topics = ddg.RelatedTopics || [];
+    let count = 0;
+    for(const t of topics){
+      if(t.Text && t.FirstURL){
+        appendResultCard(t.Text, t.Text, t.FirstURL);
+        if(++count >= 4) break;
+      }
+    }
+    
+    if((!ddg.AbstractText || !ddg.AbstractText.trim()) && count === 0){
+      const fallback = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+      const c = document.createElement('div');
+      c.className = 'result-card';
+      c.innerHTML = `<div class="result-title">No concise summary found</div>
+                     <div class="result-snippet">Try the full web search for more sources.</div>
+                     <a class="result-link" href="${escapeAttr(fallback)}" target="_blank" rel="noopener noreferrer">${escapeHtml(fallback)}</a>`;
+      document.getElementById('chat').appendChild(c);
+    }
+    
+    const more = document.createElement('div');
+    more.className = 'cite';
+    const google = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+    more.innerHTML = `Search more: <a class="link" href="${escapeAttr(google)}" target="_blank" rel="noopener noreferrer">Google results</a>`;
+    document.getElementById('chat').appendChild(more);
+    
+    const chatContainer = document.getElementById('chat');
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  } catch(e) {
+    console.error('Failed to render search results:', e);
+    appendMessage("Failed to display search results.", 'ai');
+  }
+}
+
+/* ---------- Context window ---------- */
+const contextWindow = [];
+const CONTEXT_LIMIT = 8;
+function pushContext(role, text){
+  try {
+    contextWindow.push({role, text, time:Date.now()});
+    if(contextWindow.length > CONTEXT_LIMIT) contextWindow.shift();
+  } catch(e) {
+    // Silently fail for context window
+  }
+}
+
+/* ---------- Typing indicator ---------- */
+function appendTypingIndicator(){
+  try {
+    const chatContainer = document.getElementById('chat');
+    if (!chatContainer) return;
+    
+    const t = document.createElement('div');
+    t.className = 'typing';
+    t.id = 'typingIndicator';
+    t.innerHTML = `
+      <div class="typing-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <span>Thinking...</span>
+    `;
+    chatContainer.appendChild(t);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  } catch(e) {
+    console.error('Failed to append typing indicator:', e);
+  }
+}
+
+function removeTypingIndicator(){
+  try {
+    const t = document.getElementById('typingIndicator');
+    if(t) t.remove();
+  } catch(e) {
+    // Silently fail
+  }
+}
+
+function simulateThinking(text, cb){
+  try {
+    appendTypingIndicator();
+    const base = 400 + Math.min(1200, text.length * 8);
+    const delay = Math.round(base * (0.8 + Math.random()*0.4));
+    setTimeout(()=>{ 
+      removeTypingIndicator(); 
+      cb(); 
+    }, delay);
+  } catch(e) {
+    cb();
+  }
+}
+
+/* ---------- Reply variation ---------- */
+const OPENERS = ["Sure —","Alright,","Okay,","Got it.","Here you go:"];
+const CLOSERS = ["Anything else?","Want more detail?","Shall I search for sources?","Need an example?"];
+function varyReply(base, confidence){
+  try {
+    const parts = [];
+    if(Math.random() < 0.4) parts.push(sample(OPENERS));
+    parts.push(base);
+    if(confidence < 0.6 && Math.random() < 0.5) parts.push("I might be a bit unsure about that.");
+    if(Math.random() < 0.4) parts.push(sample(CLOSERS));
+    return parts.join(' ');
+  } catch(e) {
+    return base;
+  }
+}
+
+/* ---------- Retrieval fallback ---------- */
+function retrieveBySimilarity(text){
+  try {
+    const v = tfidfVector(text);
+    let bestScore = -1;
+    let bestIdx = -1;
+    for(let i=0;i<examples.length;i++){
+      const exVec = tfidfVector(examples[i].in);
+      const score = cosine(v, exVec);
+      if(score > bestScore){ bestScore = score; bestIdx = i; }
+    }
+    return {score:bestScore, example: examples[bestIdx] || examples[0]};
+  } catch(e) {
+    return {score:0, example: examples[0]};
+  }
+}
+
+/* ---------- Follow-up generation ---------- */
+function generateFollowups(userText){
+  try {
+    const s = userText.toLowerCase();
+    const suggestions = [];
+    if(s.includes('how') || s.includes('what') || s.includes('?')){
+      suggestions.push("Show an example", "Explain step-by-step", "Search for sources");
+    } else if(s.startsWith('web:') || s.startsWith('search:')){
+      suggestions.push("Search recent news", "Show more sources", "Save this summary");
+    } else if(s.includes('name') || s.includes('remember')){
+      suggestions.push("Change saved name", "What did you save?", "Clear saved info");
+    } else {
+      suggestions.push("Tell me more", "Give an example", "Search the web about this");
+    }
+    return suggestions.slice(0,3);
+  } catch(e) {
+    return ["Ask another question", "Tell me more", "Search the web"];
+  }
+}
+
+function appendFollowups(suggestions){
+  try {
+    const followupContainer = document.createElement('div');
+    followupContainer.className = 'followups';
+    
+    suggestions.forEach(text => {
+      const btn = document.createElement('div');
+      btn.className = 'followup';
+      btn.textContent = text;
+      btn.addEventListener('click', () => {
+        const input = document.getElementById('input');
+        if (input) {
+          input.value = text;
+          input.focus();
+          document.getElementById('send').click();
+        }
+      });
+      followupContainer.appendChild(btn);
+    });
+    
+    const chatContainer = document.getElementById('chat');
+    if (chatContainer) {
+      chatContainer.appendChild(followupContainer);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  } catch(e) {
+    console.error('Failed to append followups:', e);
+  }
+}
+
+/* ---------- Inference pipeline ---------- */
+function respondTo(text){
+  if (!text || typeof text !== 'string' || text.trim().length === 0) {
+    appendMessage("Please enter a message.", 'ai');
+    return;
+  }
+  
+  const inputText = text.substring(0, 500).trim(); // Limit input length
+  appendMessage(inputText, 'user');
+  pushContext('user', inputText);
+
+  // Disable buttons during processing
+  const buttons = document.querySelectorAll('.composer button');
+  buttons.forEach(btn => btn.disabled = true);
+
+  // Math handling
+  if(isMathInput(inputText)){
+    simulateThinking(inputText, ()=>{
       try {
-        const answer = await orchestrate(text);
-        if (removeSk) removeSk();
-        push('assistant', answer);
-      } catch (e) {
-        if (removeSk) removeSk();
-        push('assistant', `## Connection/Access Error\n- **Status:** ${e.message}\n- **Suggestion:** Source may be restricted (CORS). Rephrase the query or try different keywords.`);
+        const math = safeEvaluate(inputText);
+        if(math.ok){
+          appendMessage("Result: " + math.value, 'ai');
+          if(math.steps){
+            const html = `<strong>Steps:</strong><br>${math.steps.map(s=>`• ${escapeHtml(s)}`).join('<br>')}`;
+            appendSteps(html);
+          }
+        } else {
+          appendMessage("I couldn't evaluate that expression: " + math.error, 'ai');
+        }
+      } catch(e) {
+        appendMessage("Math evaluation failed. Please try a simpler expression.", 'ai');
+      } finally {
+        buttons.forEach(btn => btn.disabled = false);
+      }
+    });
+    return;
+  }
+
+  // Web research prefix
+  const lower = inputText.toLowerCase();
+  if(lower.startsWith('web:') || lower.startsWith('search:') || lower.startsWith('ddg:')){
+    const q = inputText.split(':').slice(1).join(':').trim();
+    if(!q){ 
+      appendMessage("Please provide a query after the prefix, e.g., web: climate change", 'ai');
+      buttons.forEach(btn => btn.disabled = false);
+      return; 
+    }
+    
+    simulateThinking(q, async ()=>{
+      try {
+        appendMessage("Searching the web for: " + q, 'ai');
+        const res = await performWebSearch(q);
+        if(res.ok) {
+          renderSearchResults(q, res.data);
+        } else {
+          appendMessage("Search failed: " + res.error, 'ai');
+        }
+      } catch(e) {
+        appendMessage("Search failed due to an unexpected error.", 'ai');
+      } finally {
+        buttons.forEach(btn => btn.disabled = false);
+      }
+    });
+    return;
+  }
+
+  // Normal conversational flow
+  simulateThinking(inputText, ()=>{
+    try {
+      // 1) Try neural model
+      const x = tfidfVector(inputText);
+      const {probs} = forward(x);
+      const topIdx = argmax(probs);
+      const confidence = probs[topIdx] || 0;
+      let reply = responses[topIdx] || "I'm not sure how to respond to that.";
+
+      // 2) If model low confidence, try TF-IDF retrieval
+      if(confidence < 0.55){
+        const retrieval = retrieveBySimilarity(inputText);
+        if(retrieval.score > 0.35){
+          reply = retrieval.example.out;
+        } else {
+          // 3) Check for memory commands
+          const t = inputText.toLowerCase();
+          if(t.startsWith('remember my name is ') || t.startsWith("my name is ")){
+            const parts = inputText.split(' ');
+            const name = parts.slice(-1)[0] || '';
+            if (name) {
+              saveName(name);
+              reply = `Okay, I'll remember your name as ${name}.`;
+            }
+          } else if(t.startsWith('save note ') || t.startsWith('note ')){
+            const note = inputText.replace(/^save note\s*/i,'').replace(/^note\s*/i,'');
+            if (note) {
+              saveNote(note);
+              reply = `Saved note: ${note}`;
+            }
+          } else if(t.includes('what is my name') || t.includes("what's my name")){
+            const n = getName();
+            reply = n ? `You told me your name is ${n}.` : "I don't know your name yet. Tell me: my name is ...";
+          } else {
+            // 4) Markov fallback
+            reply = markovGenerate(inputText, 14, 0.8);
+          }
+        }
+      }
+
+      // Replace tokens
+      const name = getName();
+      const note = getNote();
+      reply = reply.replace(/\{name\}/g, name || 'friend');
+      reply = reply.replace(/\{note\}/g, note || '(none)');
+
+      // Humanize and vary
+      const humanReply = varyReply(reply, confidence);
+      appendMessage(humanReply, 'ai');
+      pushContext('ai', humanReply);
+
+      // Follow-ups
+      const followups = generateFollowups(inputText);
+      appendFollowups(followups);
+
+      // Confidence badge occasionally
+      if(Math.random() < 0.2 && confidence > 0.1){
+        const conf = document.createElement('div');
+        conf.className = 'confidence';
+        conf.textContent = `confidence ${Math.round(confidence*100)}%`;
+        const chatContainer = document.getElementById('chat');
+        if (chatContainer) {
+          chatContainer.appendChild(conf);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      }
+    } catch(e) {
+      console.error('Response generation failed:', e);
+      appendMessage("I encountered an error while processing your request. Please try again.", 'ai');
+    } finally {
+      buttons.forEach(btn => btn.disabled = false);
+    }
+  });
+}
+
+/* ---------- Day/Night Mode ---------- */
+function detectTimeBasedTheme() {
+  try {
+    const hour = new Date().getHours();
+    const isDayTime = hour >= 7 && hour < 19;
+    const savedTheme = localStorage.getItem('orgena_theme');
+    
+    if (savedTheme === 'day' || savedTheme === 'night') {
+      applyTheme(savedTheme === 'day');
+    } else {
+      applyTheme(isDayTime);
+    }
+  } catch(e) {
+    // Default to dark theme on error
+    applyTheme(false);
+  }
+}
+
+function applyTheme(isDayMode) {
+  try {
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+    
+    if (isDayMode) {
+      document.body.classList.add('day-mode');
+      if (themeIcon) {
+        themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />';
+      }
+      if (themeText) {
+        themeText.textContent = 'Day Mode';
+      }
+    } else {
+      document.body.classList.remove('day-mode');
+      if (themeIcon) {
+        themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />';
+      }
+      if (themeText) {
+        themeText.textContent = 'Night Mode';
       }
     }
+    
+    localStorage.setItem('orgena_theme', isDayMode ? 'day' : 'night');
+  } catch(e) {
+    console.error('Failed to apply theme:', e);
+  }
+}
 
-    el.send.addEventListener('click', handleSend);
-    el.input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); handleSend(); } });
-    el.clearChat.addEventListener('click', () => { messages = []; el.chat.innerHTML = ''; persistChat(); });
-    el.newChat.addEventListener('click', () => {
-      messages = []; el.chat.innerHTML = '';
-      push('assistant', `Hello! I am “${botName}”. You can ask me anything. What would you like to learn?`);
-    });
-    el.exportChat.addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify({ bot: botName, messages }, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `chat-${Date.now()}.json`; a.click();
-      URL.revokeObjectURL(url);
-    });
+function toggleTheme() {
+  try {
+    const isDayMode = !document.body.classList.contains('day-mode');
+    applyTheme(isDayMode);
+  } catch(e) {
+    console.error('Failed to toggle theme:', e);
+  }
+}
 
-    loadChat();
-    if (messages.length === 0) {
-      push('assistant', `Hello Istanbul! I am “${botName}”. I collect data from the real web and synthesize it. Example: “London rainwater infrastructure—sources + table”, “Italy earthquake regulation comparison—linked summary”.`);
+/* ---------- Event handlers ---------- */
+function initializeEventHandlers() {
+  try {
+    // Send message
+    const sendBtn = document.getElementById('send');
+    const input = document.getElementById('input');
+    
+    if (sendBtn && input) {
+      sendBtn.addEventListener('click', () => {
+        const v = input.value.trim();
+        if(!v) return;
+        respondTo(v);
+        input.value = '';
+        input.focus();
+      });
+      
+      input.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendBtn.click();
+        }
+      });
     }
-  </script>
+    
+    // Remember button
+    const rememberBtn = document.getElementById('remember');
+    if (rememberBtn) {
+      rememberBtn.addEventListener('click', () => {
+        try {
+          const name = prompt("Enter a name to remember (or leave blank to clear):", getName() || '');
+          if(name === null) return;
+          if(name.trim() === ''){
+            localStorage.removeItem('tinyai_name');
+            appendMessage("Name cleared.", 'ai');
+          } else {
+            saveName(name.trim());
+            appendMessage("Name saved: " + name.trim(), 'ai');
+          }
+        } catch(e) {
+          appendMessage("Failed to save name.", 'ai');
+        }
+      });
+    }
+    
+    // Research button
+    const researchBtn = document.getElementById('research');
+    if (researchBtn) {
+      researchBtn.addEventListener('click', async () => {
+        const input = document.getElementById('input');
+        if (!input) return;
+        
+        const q = input.value.trim();
+        if(!q){
+          try {
+            const ask = prompt("Enter a research query to search the web for:");
+            if(!ask) return;
+            respondTo('web: ' + ask);
+            input.value = '';
+          } catch(e) {
+            appendMessage("Failed to open prompt.", 'ai');
+          }
+          return;
+        }
+        
+        const lower = q.toLowerCase();
+        if(lower.startsWith('web:') || lower.startsWith('search:') || lower.startsWith('ddg:')){
+          respondTo(q);
+          input.value = '';
+          return;
+        }
+        
+        respondTo('web: ' + q);
+        input.value = '';
+      });
+    }
+    
+    // New Chat Button
+    const newChatBtn = document.getElementById('newChat');
+    if (newChatBtn) {
+      newChatBtn.addEventListener('click', () => {
+        chatManager.createNewChat();
+      });
+    }
+    
+    // Theme Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', toggleTheme);
+    }
+    
+    // Focus input on load
+    if (input) {
+      setTimeout(() => input.focus(), 100);
+    }
+  } catch(e) {
+    console.error('Failed to initialize event handlers:', e);
+  }
+}
 
-  <script>
-function addMsg(role, content, animate=true) {
-  const wrap = document.createElement('div');
-  wrap.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar';
-  avatar.textContent = role === 'user' ? 'S' : '.';
-  const body = document.createElement('div');
-  body.className = 'content';
-
-  // Add timestamp
-  const timestamp = document.createElement('div');
-  timestamp.className = 'small fade';
-  const now = new Date();
-  timestamp.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  body.appendChild(timestamp);
-
-  wrap.appendChild(avatar);
-  wrap.appendChild(body);
-  el.chat.appendChild(wrap);
-  scrollBottom();
-
-  if...
+/* ---------- Initialize ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    // Load theme preference
+    detectTimeBasedTheme();
+    
+    // Initialize event handlers
+    initializeEventHandlers();
+    
+    // Show stored note if exists
+    const note = getNote();
+    if(note) {
+      setTimeout(() => {
+        appendMessage("Saved note: " + note, 'ai');
+      }, 500);
+    }
+    
+    // Train model
+    appendMessage("Initializing AI model...", 'ai');
+    setTimeout(() => {
+      try {
+        train(400, 0.04, 3);
+        appendMessage("AI model ready! How can I help you today?", 'ai');
+      } catch(e) {
+        console.error('Training failed:', e);
+        appendMessage("AI model initialized with basic capabilities.", 'ai');
+      }
+    }, 100);
+    
+    // Error boundary for unhandled errors
+    window.addEventListener('error', (event) => {
+      console.error('Global error:', event.error);
+    });
+    
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled promise rejection:', event.reason);
+    });
+    
+  } catch(e) {
+    console.error('Initialization failed:', e);
+    // Show basic message if everything fails
+    const chatContainer = document.getElementById('chat');
+    if (chatContainer) {
+      chatContainer.innerHTML = '<div class="error-message">Failed to initialize. Please refresh the page.</div>';
+    }
+  }
+});
 </script>
-
 </body>
 </html>
